@@ -3,15 +3,17 @@ use regex::{Captures, Regex, RegexBuilder};
 
 #[derive(Debug, Clone)]
 struct AsciiCasePreservingReplace {
-  to: String,
+  query: String,
+  replacement: String,
   regex: Regex,
 }
 
 impl AsciiCasePreservingReplace {
-  fn new(from: &str, to: &str) -> AsciiCasePreservingReplace {
+  fn new(query: &str, replacement: &str) -> AsciiCasePreservingReplace {
     AsciiCasePreservingReplace {
-      to: to.to_owned(),
-      regex: RegexBuilder::new(&from)
+      query: query.to_owned(),
+      replacement: replacement.to_owned(),
+      regex: RegexBuilder::new(&query)
         .case_insensitive(true)
         .build()
         .unwrap(),
@@ -26,19 +28,26 @@ impl AsciiCasePreservingReplace {
 impl<'a> regex::Replacer for &'a AsciiCasePreservingReplace {
   fn replace_append(&mut self, caps: &Captures, dst: &mut String) {
     for s in caps.iter() {
-      let mut src_chars = s.unwrap().as_str().chars();
-      for rc in self.to.chars() {
-        if let Some(sc) = src_chars.next() {
-          // TODO what if we want to default to lowercase
-          // replacement || source
-          if rc.is_uppercase() || sc.is_uppercase() {
+      let mut query_chars = self.query.chars();
+      let mut match_chars = s.unwrap().as_str().chars();
+      for rc in self.replacement.chars() {
+        // true if char in the source text is upper
+        let match_upper = match_chars.next()
+           .map(|c| c.is_uppercase())
+           .unwrap_or(false);
+       // true if char in the query is upper
+        let query_upper = query_chars.next()
+           .map(|c| c.is_uppercase())
+           .unwrap_or(false);
+
+        if !query_upper && match_upper {
+            // if query isn't upper and match is upper, then we can capitalize
             dst.push_str(&rc.to_uppercase().to_string());
-          } else {
-            dst.push(rc);
-          }
         } else {
-          dst.push(rc);
+            // otherwise we keep the default replacement text
+            dst.push(rc);
         }
+
       }
     }
   }
@@ -46,13 +55,14 @@ impl<'a> regex::Replacer for &'a AsciiCasePreservingReplace {
 
 fn usage() {
     println!("\n\
-        Usage: kak-preservecase REGEX REPLACEMENT\n\
-        Reads from stdin, where it replaces REGEX with REPLACEMENT in a case preserving manner.\n\
+        Usage: kak-preservecase QUERY REPLACEMENT\n\
+        Reads from stdin, where it replaces QUERY with REPLACEMENT in a case preserving manner.\n\
         Example: kak-preservecase alpha Beta\n\
         \n\
-        REGEX is an case insensitive extended regular expression.\n\
-        Every instance of REGEX will be replaced with REPLACEMENT.\n\
-        The replacement character is uppercase if REPLACEMENT is uppercase or the matched text is uppercase.\n\
+        For matching purposes, QUERY is an case insensitive string.\n\
+        It does not accept regex, as this would cause ambiguity.\n\
+        Every instance of QUERY will be replaced with REPLACEMENT.\n\
+        For every match at index i, uppercaseness is: (!QUERY[i] && MATCH[i]) || REPLACEMENT[i]\n\
     ");
 }
 

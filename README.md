@@ -4,13 +4,16 @@
 
 This is a simple command-line tool to replace text in a way that preserves case.
 
-Usage: `kak-preservecase REGEX REPLACEMENT`
-Reads from stdin, where it replaces REGEX with REPLACEMENT in a case preserving manner.
-Example: `kak-preservecase alpha Beta`
+```
+Usage: kak-preservecase QUERY REPLACEMENT
+Reads from stdin, where it replaces QUERY with REPLACEMENT in a case preserving manner.
+Example: kak-preservecase alpha Beta
 
-REGEX is an case insensitive extended regular expression.
-Every instance of REGEX will be replaced with REPLACEMENT.
-The replacement character is uppercase if REPLACEMENT is uppercase or the matched text is uppercase.
+For matching purposes, QUERY is an case insensitive string.
+It does not accept regex, as this would cause ambiguity.
+Every instance of QUERY will be replaced with REPLACEMENT.
+For every match at index i, uppercaseness is: (!QUERY[i] && MATCH[i]) || REPLACEMENT[i]
+```
 
 ### As a kakoune plugin
 Using [plug.kak]( https://github.com/robertmeta/plug.kak ), you can include this plugin the following way:
@@ -45,9 +48,8 @@ plug "https://github.com/dmerejkowsky/kak-subvert" ensure do %{
 }
 ```
 
-### More usage examples
+### Usage example
 
-##### Example 1 (simple replace)
 Text before:
 ```
 camelCase
@@ -65,21 +67,46 @@ ABCDECASE
 AbcdeCase
 ```
 
-### Caveats and limitations
-This plugin doesn't work well when we have arguments of different lengths.
+### Caveats and Limitations
+
+We can't support regex because it would introduce ambiguity. 
+Regex would prevent us from specifying the the case of the query. 
+This would cause problems when we have arguments of different lengths.
 
 Example:
 ```
 userMail
+UserMail
 ```
 You enter:
 ```
-preserve-case usermail otherUserMail
+preserve-case user otherUser
 ```
 Text after:
 ```
 otheRUserMail
+OtheRUserMail
 ```
 The capitalization is applied like a mask, without regard for word boundaries.
 Since `userMail` has a capital at index 4, so does `otheRUserMail`.
-A future update may find a fix to this issue.
+If you have this issue, it means you need to put a capital in your query string to mask it in the source text.
+
+### Fixed usage example
+
+To avoid the above issue, you have to specify any capitals you want to be ignored in the source text.
+
+Text before:
+```
+userMail
+UserMail
+```
+You enter:
+```
+preserve-case user otherUser
+```
+Text after:
+```
+otherUserMail
+OtherUserMail
+```
+
