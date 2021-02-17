@@ -80,15 +80,15 @@ UserMail
 ```
 You enter:
 ```
-preserve-case user otherUser
+preserve-case usermail otherUserSettings
 ```
 Text after:
 ```
-otheRUserMail
-OtheRUserMail
+otheRUserSettings
+OtheRUserSettings
 ```
 The capitalization is applied like a mask, without regard for word boundaries.
-Since `userMail` has a capital at index 4, so does `otheRUserMail`.
+Since `userMail` has a capital at index 4, so does `otheRUserSettings`.
 If you have this issue, it means you need to put a capital in your query string to mask it in the source text.
 
 ### Fixed usage example
@@ -102,11 +102,10 @@ UserMail
 ```
 You enter:
 ```
-preserve-case user otherUser
+preserve-case userMail otherUserSettings
 ```
 Text after:
 ```
-otherUserMail
-OtherUserMail
+otherUserSettings
+OtherUserSettings
 ```
-
