@@ -1,0 +1,8 @@
+[package]
+name = "kak-preservecase"
+version = "0.1.0"
+authors = ["gpi <gpimpale29@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+regex = "1"
