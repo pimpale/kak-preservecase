@@ -22,7 +22,7 @@ plug "https://github.com/pimpale/kak-preservecase" ensure do %{
     cargo install --locked --force --path .
 } config %{
     # I chose s because it was ergonomic, but you can bind it to something else
-    map global user s ':preserve-case' -docstring 'case sensitive replace'
+    map global user s ':preserve-case ' -docstring 'case sensitive replace'
 }
 ```
 
